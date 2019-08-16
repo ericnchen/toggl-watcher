@@ -1,4 +1,24 @@
 [[package]]
+category = "dev"
+description = "Low-level, data-driven core of boto 3."
+name = "botocore"
+optional = false
+python-versions = "*"
+version = "1.12.209"
+
+[package.dependencies]
+docutils = ">=0.10,<0.16"
+jmespath = ">=0.7.1,<1.0.0"
+
+[package.dependencies.python-dateutil]
+python = ">=2.7"
+version = ">=2.1,<3.0.0"
+
+[package.dependencies.urllib3]
+python = ">=3.4"
+version = ">=1.20,<1.26"
+
+[[package]]
 category = "main"
 description = "Python package for providing Mozilla's CA Bundle."
 name = "certifi"
@@ -15,12 +35,40 @@ python-versions = "*"
 version = "3.0.4"
 
 [[package]]
+category = "dev"
+description = "Docutils -- Python Documentation Utilities"
+name = "docutils"
+optional = false
+python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+version = "0.15.2"
+
+[[package]]
 category = "main"
 description = "Internationalized Domain Names in Applications (IDNA)"
 name = "idna"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 version = "2.8"
+
+[[package]]
+category = "dev"
+description = "JSON Matching Expressions"
+name = "jmespath"
+optional = false
+python-versions = "*"
+version = "0.9.4"
+
+[[package]]
+category = "dev"
+description = "Extensions to the standard Python datetime module"
+marker = "python_version >= \"2.7\""
+name = "python-dateutil"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
+version = "2.8.0"
+
+[package.dependencies]
+six = ">=1.5"
 
 [[package]]
 category = "main"
@@ -37,6 +85,15 @@ idna = ">=2.5,<2.9"
 urllib3 = ">=1.21.1,<1.25.0 || >1.25.0,<1.25.1 || >1.25.1,<1.26"
 
 [[package]]
+category = "dev"
+description = "Python 2 and 3 compatibility utilities"
+marker = "python_version >= \"2.7\""
+name = "six"
+optional = false
+python-versions = ">=2.6, !=3.0.*, !=3.1.*"
+version = "1.12.0"
+
+[[package]]
 category = "main"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 name = "urllib3"
@@ -45,12 +102,17 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4"
 version = "1.25.3"
 
 [metadata]
-content-hash = "167785429fb499c6cd42bc0ecc3a911bd415f8c1c939a959eef78580a230ce8b"
+content-hash = "0bb619477758e1bd94f6b6ed40b470c9b599a207535d87bdc2df507c7c24bb51"
 python-versions = "^3.7"
 
 [metadata.hashes]
+botocore = ["8be475b83c3b654a78c2aa195dc4c82852a31c2e72b32b73f570260ae6451eba", "bf2dcd604a83b045df0870486c3252785734b1cbe167752b8f777d8174218e64"]
 certifi = ["046832c04d4e752f37383b628bc601a7ea7211496b4638f6514d0e5b9acc4939", "945e3ba63a0b9f577b1395204e13c3a231f9bc0223888be653286534e5873695"]
 chardet = ["84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae", "fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691"]
+docutils = ["6c4f696463b79f1fb8ba0c594b63840ebd41f059e92b31957c46b74a4599b6d0", "9e4d7ecfc600058e07ba661411a2b7de2fd0fafa17d1a7f7361cd47b1175c827", "a2aeea129088da402665e92e0b25b04b073c04b2dce4ab65caaa38b7ce2e1a99"]
 idna = ["c357b3f628cf53ae2c4c05627ecc484553142ca23264e593d327bcde5e9c3407", "ea8b7f6188e6fa117537c3df7da9fc686d485087abf6ac197f9c46432f7e4a3c"]
+jmespath = ["3720a4b1bd659dd2eecad0666459b9788813e032b83e7ba58578e48254e0a0e6", "bde2aef6f44302dfb30320115b17d030798de8c4110e28d5cf6cf91a7a31074c"]
+python-dateutil = ["7e6584c74aeed623791615e26efd690f29817a27c73085b78e4bad02493df2fb", "c89805f6f4d64db21ed966fda138f8a5ed7a4fdbc1a8ee329ce1b74e3c74da9e"]
 requests = ["11e007a8a2aa0323f5a921e9e6a2d7e4e67d9877e85773fba9ba6419025cbeb4", "9cf5292fcd0f598c671cfc1e0d7d1a7f13bb8085e9a590f48c010551dc6c4b31"]
+six = ["3350809f0555b11f552448330d0b52d5f24c91a322ea4a15ef22629740f3761c", "d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73"]
 urllib3 = ["b246607a25ac80bedac05c6f282e3cdaf3afb65420fd024ac94435cabe6e18d1", "dbe59173209418ae49d485b87d1681aefa36252ee85884c31346debd19463232"]

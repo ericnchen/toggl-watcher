@@ -1,104 +1,97 @@
 # -*- coding: utf-8 -*-
 import base64
 import datetime
-import json
 import logging
 import os
+import urllib.parse
 
-import requests
+# import requests
+from botocore.vendored import requests
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 
-class PushcutHandler:
-    def __init__(self, token: str) -> None:
-        self._auth_token = token
+def check_status():
+    """Check if something is being logged. An empty dict returned means no.
 
-    def push_notification(self, **kwargs):
-        r = requests.post(
-            "https://api.pushcut.io/v1/notifications/Hello",
-            json=kwargs,
-            headers={"API-Key": self._auth_token},
-        )
-        logger.debug(f"Pushcut: {r.json()['message']}")
-        return r
+    The possible keys in the output are `id`, `duration`, and `description`.
 
+    * If `id` exists, then something is being tracked.
+    * `description` is the name of the entry being tracked if it has one.
+    * `duration` is a number used to get the duration of the entry.
+    """
+    logger.debug("Starting the check_status() routine.")
 
-class TogglHandler:
-    def __init__(self, token: str) -> None:
-        self._auth_token = base64.b64encode(f"{token}:api_token".encode()).decode()
+    url = "https://www.toggl.com/api/v8/time_entries/current"
+    token = os.environ["TOGGL_API_TOKEN"]
+    auth_token = base64.b64encode(f"{token}:api_token".encode()).decode()
+    resp = requests.get(url, headers={"Authorization": "Basic " + auth_token})
 
-    def get_current_entry(self):
-        r = requests.get(
-            "https://www.toggl.com/api/v8/time_entries/current",
-            headers={"Authorization": "Basic " + self._auth_token},
-        )
-        data = r.json()["data"]
-        return TogglEntry(data)
+    cols = "id", "duration", "description"
+    status = {k: v for k, v in (resp.json()["data"] or {}).items() if k in cols}
+    logger.debug(f"{'Something' if 'id' in status else 'Something'} is being tracked.")
+
+    return status
 
 
-class TogglEntry:
-    def __init__(self, data: dict) -> None:
-        self._data = data
+def handle_status(status, threshold=1):
+    logger.debug("Starting the handle_status() routine.")
 
-    @property
-    def description(self) -> str:
-        """Description of the entry."""
-        return self._data["description"]
+    if "id" not in status:
+        return trigger_pushcut("Toggl Watcher - Nothing Running")
 
-    @property
-    def duration(self) -> int:
-        """Duration of the entry in minutes."""
-        return int((datetime.datetime.now().timestamp() + self._data["duration"]) / 60)
+    duration = int((datetime.datetime.now().timestamp() + status["duration"]) / 60)
+    entry_name = status.get("description", str(status["id"]))
+
+    if duration > threshold:
+        data = {"text": f"{entry_name} has been running for {duration} minutes."}
+        return trigger_pushcut("Toggl Watcher - Threshold Met", data=data)
+
+    else:
+        return 200
 
 
-def lambda_function(event, context):
-    toggl = TogglHandler(os.environ["TOGGL_API_TOKEN"])
-    entry = toggl.get_current_entry()
+def trigger_pushcut(notification: str, data=None) -> int:
+    """Trigger a Pushcut notification.
 
-    try:
-        duration = entry.duration
-        threshold = 5  # 60  # Minutes
-        if duration > threshold:
-            logger.debug(f"Duration threshold met ({duration} > {threshold})")
-            pc_body = {
-                "text": f"{entry.description} has been running for {duration} minutes.",
-                "actions": [
-                    {"name": "Stop timer", "shortcut": "Stop Current Toggl Timer"},
-                    {"name": "Do nothing"},
-                ],
-            }
-        else:
-            logger.debug(f"Duration threshold not met ({duration} < {threshold})")
-            return {
-                "headers": {"Content-Type": "application/json"},
-                "isBase64Encoded": False,
-                "statusCode": 200,
-                "body": json.dumps({}),
-            }
+    Args:
+        notification: The name of the notification to trigger.
+        data (optional): Additional info for the Pushcut API.
+    """
+    headers = {"API-Key": os.environ["PUSHCUT_API_TOKEN"]}
+    url = f"https://api.pushcut.io/v1/notifications/{urllib.parse.quote(notification)}"
+    return requests.post(url, json=data, headers=headers).status_code
 
-    except TypeError:
-        logger.debug("No Toggl entry")
-        pc_body = {
-            "text": "Tap to open Toggl or pull down for more options.",
-            "defaultAction": {"name": "Open Toggl", "url": "toggl://"},
-            "actions": [
-                {"name": "Open Toggl", "url": "toggl://"},
-                {"name": "Do nothing"},
-            ],
-        }
 
-    ph = PushcutHandler(os.environ["PUSHCUT_API_TOKEN"])
-    r = ph.push_notification(title="Toggl Watcher", **pc_body)
+# noinspection PyUnusedLocal
+def periodic_check(event, context):
+    logger.debug("Starting the periodic_check() routine.")
 
-    return {
-        "headers": {"Content-Type": "application/json"},
-        "isBase64Encoded": False,
-        "statusCode": r.status_code,
-        "body": json.dumps(r.json()),
-    }
+    status = check_status()
+    status_code = handle_status(status, threshold=event.get("threshold", 60))
+
+    return {"statusCode": status_code}
+
+
+# noinspection PyUnusedLocal
+def stop(event, context):
+    logger.debug("Starting the stop_current() routine.")
+
+    status = check_status()
+
+    if "id" in status:
+        url = f"https://www.toggl.com/api/v8/time_entries/{status['id']}/stop"
+        token = os.environ["TOGGL_API_TOKEN"]
+        auth_token = base64.b64encode(f"{token}:api_token".encode()).decode()
+        r = requests.put(url, headers={"Authorization": "Basic " + auth_token})
+        status_code = r.status_code
+    else:
+        status_code = 200
+
+    return {"statusCode": status_code}
 
 
 if __name__ == "__main__":
-    lambda_function(None, None)
+    stop({}, None)
+    # periodic_check({}, None)

@@ -1,0 +1,27 @@
+service: toggl-watcher
+
+provider:
+  name: aws
+  region: eu-central-1
+  runtime: python3.7
+  stage: ${opt:stage, 'dev'}
+
+functions:
+  periodic_check:
+    description: Check Toggl periodically to see if anything is being tracked.
+    handler: handler.periodic_check
+    events:
+      - schedule: cron(0 6-21 * * ? *)  # Every every between 6h and 21h UTC.
+  stop_current:
+    description: Stops the currently running Toggl entry.
+    handler: handler.stop
+    events:
+      - http:
+          path: stop_current
+          method: post
+
+package:
+  exclude:
+    - ./**
+  include:
+    - handler.py

@@ -4,16 +4,11 @@ import datetime
 import json
 import logging
 import os
-import pathlib
 
 import requests
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
-
-# shim env; won't be needed in real deployment
-for k, v in json.load(pathlib.Path("credentials.json").open(encoding="utf-8")).items():
-    os.environ[k.upper()] = v
 
 
 class PushcutHandler:

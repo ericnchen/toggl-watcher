@@ -11,7 +11,7 @@ functions:
     description: Check Toggl periodically to see if anything is being tracked.
     handler: handler.periodic_check
     events:
-      - schedule: cron(1,31 6-21 * * ? *)  # Every 60 minutes between 6h and 21h UTC.
+      - schedule: cron(0 6-20 * * ? *)  # From 8-20 UTC at 0 minutes.
   stop_current:
     description: Stops the currently running Toggl entry.
     handler: handler.stop
